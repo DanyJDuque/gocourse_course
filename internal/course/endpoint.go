@@ -92,16 +92,17 @@ func makeCreateEndpoint(s Service) Controller {
 
 func makeGetEndpoint(s Service) Controller {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-
 		req := request.(GetReq)
 
 		course, err := s.Get(ctx, req.ID)
+
 		if err != nil {
 			if errors.As(err, &ErrNotFound{}) {
 				return nil, response.NotFound(err.Error())
 			}
-			return nil, response.InternalServerError(err.Error())
+			return nil, response.InternalServerError((err.Error()))
 		}
+
 		return response.OK("success", course, nil), nil
 	}
 }

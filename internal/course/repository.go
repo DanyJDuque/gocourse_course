@@ -48,20 +48,28 @@ func (r *repo) Create(ctx context.Context, course *domain.Course) error {
 func (repo *repo) Get(ctx context.Context, id string) (*domain.Course, error) {
 	course := domain.Course{ID: id}
 
-	if err := repo.db.First(&course).Error; err != nil {
+	if err := repo.db.WithContext(ctx).First(&course).Error; err != nil {
+		repo.log.Println(err)
+		if err == gorm.ErrRecordNotFound {
+			return nil, ErrNotFound{id}
+		}
+
 		return nil, err
 	}
 	return &course, nil
+
 }
 
 func (repo *repo) GetAll(ctx context.Context, filters Filters, offset, limit int) ([]domain.Course, error) {
 	var c []domain.Course
 
-	tx := repo.db.Model(&c)
+	tx := repo.db.WithContext(ctx).Model(&c)
 	tx = applyFilters(tx, filters)
 	tx = tx.Limit(limit).Offset(offset)
 	result := tx.Order("created_at desc").Find(&c)
+
 	if result.Error != nil {
+		repo.log.Println(result.Error)
 		return nil, result.Error
 	}
 	return c, nil

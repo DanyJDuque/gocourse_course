@@ -8,6 +8,7 @@ require (
 	github.com/DanyJDuque/gocourse_meta v0.0.1
 	github.com/go-kit/kit v0.13.0
 	github.com/gorilla/mux v1.8.1
+	github.com/joho/godotenv v1.5.1
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/gorm v1.31.0
 )
