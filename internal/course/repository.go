@@ -35,13 +35,12 @@ func NewRepo(l *log.Logger, db *gorm.DB) Repository {
 	}
 }
 
-func (r *repo) Create(ctx context.Context, course *domain.Course) error {
-	if err := r.db.Create(course).Error; err != nil {
-		r.log.Panicf("error: %v", err)
+func (repo *repo) Create(ctx context.Context, course *domain.Course) error {
+	if err := repo.db.WithContext(ctx).Create(course).Error; err != nil {
+		repo.log.Println(err)
 		return err
 	}
-
-	r.log.Println("course created with id: ", course.ID)
+	repo.log.Println("course created with id: ", course.ID)
 	return nil
 }
 
@@ -53,11 +52,9 @@ func (repo *repo) Get(ctx context.Context, id string) (*domain.Course, error) {
 		if err == gorm.ErrRecordNotFound {
 			return nil, ErrNotFound{id}
 		}
-
 		return nil, err
 	}
 	return &course, nil
-
 }
 
 func (repo *repo) GetAll(ctx context.Context, filters Filters, offset, limit int) ([]domain.Course, error) {
@@ -75,7 +72,7 @@ func (repo *repo) GetAll(ctx context.Context, filters Filters, offset, limit int
 	return c, nil
 }
 
-func (r *repo) Update(ctx context.Context, id string, name *string, startDate, endDate *time.Time) error {
+func (repo *repo) Update(ctx context.Context, id string, name *string, startDate, endDate *time.Time) error {
 	values := make(map[string]interface{})
 
 	if name != nil {
@@ -89,28 +86,31 @@ func (r *repo) Update(ctx context.Context, id string, name *string, startDate, e
 		values["end_date"] = *endDate
 	}
 
-	result := r.db.WithContext(ctx).Model(&domain.Course{}).Where("id = ?", id).Updates(values)
+	result := repo.db.WithContext(ctx).Model(&domain.Course{}).Where("id = ?", id).Updates(values)
+
 	if result.Error != nil {
-		r.log.Println(result.Error)
+		repo.log.Println(result.Error)
 		return result.Error
 	}
+
 	if result.RowsAffected == 0 {
-		r.log.Printf("course %s doesn't exist", id)
+		repo.log.Printf("course %s doesn't extist", id)
 		return ErrNotFound{id}
 	}
 	return nil
 }
 
-func (r *repo) Delete(ctx context.Context, id string) error {
+func (repo *repo) Delete(ctx context.Context, id string) error {
 	course := domain.Course{ID: id}
-	result := r.db.WithContext(ctx).Delete(&course)
+	result := repo.db.WithContext(ctx).Delete(&course)
 
 	if result.Error != nil {
-		r.log.Println(result.Error)
+		repo.log.Println(result.Error)
 		return result.Error
 	}
+
 	if result.RowsAffected == 0 {
-		r.log.Printf("course %s doesn't exist", id)
+		repo.log.Printf("course %s doesn't extist", id)
 		return ErrNotFound{id}
 	}
 	return nil
@@ -118,10 +118,9 @@ func (r *repo) Delete(ctx context.Context, id string) error {
 
 func (repo *repo) Count(ctx context.Context, filters Filters) (int, error) {
 	var count int64
-	tx := repo.db.Model(domain.Course{})
+	tx := repo.db.WithContext(ctx).Model(domain.Course{})
 	tx = applyFilters(tx, filters)
 	if err := tx.Count(&count).Error; err != nil {
-		repo.log.Println(err)
 		return 0, nil
 	}
 	return int(count), nil
@@ -132,8 +131,6 @@ func applyFilters(tx *gorm.DB, filters Filters) *gorm.DB {
 	if filters.Name != "" {
 		filters.Name = fmt.Sprintf("%%%s%%", strings.ToLower(filters.Name))
 		tx = tx.Where("lower(name) like ?", filters.Name)
-
 	}
-
 	return tx
 }

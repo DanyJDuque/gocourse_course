@@ -17,7 +17,7 @@ type (
 		Create(ctx context.Context, name, startDate, endDate string) (*domain.Course, error)
 		Get(ctx context.Context, id string) (*domain.Course, error)
 		GetAll(ctx context.Context, filters Filters, offset, limit int) ([]domain.Course, error)
-		Update(ctx context.Context, id string, name *string, startDate, endDate *string) error
+		Update(ctx context.Context, id string, name, startDate, endDate *string) error
 		Delete(ctx context.Context, id string) error
 		Count(ctx context.Context, filters Filters) (int, error)
 	}
@@ -84,7 +84,7 @@ func (s service) GetAll(ctx context.Context, filters Filters, offset, limit int)
 	return courses, nil
 }
 
-func (s service) Update(ctx context.Context, id string, name *string, startDate, endDate *string) error {
+func (s service) Update(ctx context.Context, id string, name, startDate, endDate *string) error {
 
 	var startDateParsed, endDateParsed *time.Time
 
@@ -104,6 +104,7 @@ func (s service) Update(ctx context.Context, id string, name *string, startDate,
 			s.log.Println(ErrEndLesserStart)
 			return ErrEndLesserStart
 		}
+
 		startDateParsed = &date
 	}
 	if endDate != nil {
@@ -112,10 +113,12 @@ func (s service) Update(ctx context.Context, id string, name *string, startDate,
 			s.log.Println(err)
 			return ErrInvalidEndDate
 		}
+
 		if course.StartDate.After(date) {
 			s.log.Println(ErrEndLesserStart)
 			return ErrEndLesserStart
 		}
+
 		endDateParsed = &date
 	}
 
@@ -126,7 +129,6 @@ func (s service) Update(ctx context.Context, id string, name *string, startDate,
 }
 
 func (s service) Delete(ctx context.Context, id string) error {
-
 	if err := s.repo.Delete(ctx, id); err != nil {
 		return err
 	}

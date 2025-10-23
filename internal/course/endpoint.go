@@ -72,8 +72,8 @@ func makeCreateEndpoint(s Service) Controller {
 
 		if req.StartDate == "" {
 			return nil, response.BadRequest(ErrStartDateRequiered.Error())
-		}
 
+		}
 		if req.EndDate == "" {
 			return nil, response.BadRequest(ErrEndDateRequiered.Error())
 		}
@@ -92,17 +92,17 @@ func makeCreateEndpoint(s Service) Controller {
 
 func makeGetEndpoint(s Service) Controller {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
+
 		req := request.(GetReq)
 
 		course, err := s.Get(ctx, req.ID)
-
 		if err != nil {
+
 			if errors.As(err, &ErrNotFound{}) {
 				return nil, response.NotFound(err.Error())
 			}
-			return nil, response.InternalServerError((err.Error()))
+			return nil, response.InternalServerError(err.Error())
 		}
-
 		return response.OK("success", course, nil), nil
 	}
 }
@@ -136,21 +136,22 @@ func makeGetAllEndpoint(s Service, config Config) Controller {
 
 func makeUpdateEndpoint(s Service) Controller {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
+
 		req := request.(UpdateReq)
 
 		if req.Name != nil && *req.Name == "" {
 			return nil, response.BadRequest(ErrNameRequiered.Error())
 		}
+
 		if req.StartDate != nil && *req.StartDate == "" {
 			return nil, response.BadRequest(ErrStartDateRequiered.Error())
 		}
+
 		if req.EndDate != nil && *req.EndDate == "" {
 			return nil, response.BadRequest(ErrEndDateRequiered.Error())
 		}
 
-		err := s.Update(ctx, req.ID, req.Name, req.StartDate, req.EndDate)
-		if err != nil {
-
+		if err := s.Update(ctx, req.ID, req.Name, req.StartDate, req.EndDate); err != nil {
 			if err == ErrEndLesserStart || err == ErrInvalidStartDate || err == ErrInvalidEndDate {
 				return nil, response.BadRequest(err.Error())
 			}
@@ -166,15 +167,14 @@ func makeUpdateEndpoint(s Service) Controller {
 
 func makeDeleteEndpoint(s Service) Controller {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
+
 		req := request.(DeleteReq)
 
-		err := s.Delete(ctx, req.ID)
-
-		if err != nil {
+		if err := s.Delete(ctx, req.ID); err != nil {
 			if errors.As(err, &ErrNotFound{}) {
 				return nil, response.NotFound(err.Error())
 			}
-			return nil, response.InternalServerError((err.Error()))
+			return nil, response.InternalServerError(err.Error())
 		}
 		return response.OK("success", nil, nil), nil
 	}
