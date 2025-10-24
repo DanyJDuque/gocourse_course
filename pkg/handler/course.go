@@ -3,8 +3,10 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/DanyJDuque/go_lib_response/response"
@@ -57,6 +59,11 @@ func NewCourseHTTPServer(ctx context.Context, endpoints course.Endpoints) http.H
 }
 
 func decodeCreateCourse(_ context.Context, r *http.Request) (interface{}, error) {
+
+	if err := authorization(r.Header.Get("Authorization")); err != nil {
+		return nil, response.Forbidden(err.Error())
+	}
+
 	var req course.CreateReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return nil, response.BadRequest(fmt.Sprintf("invalid request format: '%v'", err.Error()))
@@ -66,6 +73,10 @@ func decodeCreateCourse(_ context.Context, r *http.Request) (interface{}, error)
 
 func decodeGetCourse(_ context.Context, r *http.Request) (interface{}, error) {
 
+	if err := authorization(r.Header.Get("Authorization")); err != nil {
+		return nil, response.Forbidden(err.Error())
+	}
+
 	p := mux.Vars(r)
 	req := course.GetReq{
 		ID: p["id"],
@@ -74,6 +85,10 @@ func decodeGetCourse(_ context.Context, r *http.Request) (interface{}, error) {
 }
 
 func decodeGetAllCourse(_ context.Context, r *http.Request) (interface{}, error) {
+
+	if err := authorization(r.Header.Get("Authorization")); err != nil {
+		return nil, response.Forbidden(err.Error())
+	}
 
 	v := r.URL.Query()
 
@@ -89,6 +104,11 @@ func decodeGetAllCourse(_ context.Context, r *http.Request) (interface{}, error)
 }
 
 func decodeUpdateCourse(_ context.Context, r *http.Request) (interface{}, error) {
+
+	if err := authorization(r.Header.Get("Authorization")); err != nil {
+		return nil, response.Forbidden(err.Error())
+	}
+
 	var req course.UpdateReq
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -102,6 +122,10 @@ func decodeUpdateCourse(_ context.Context, r *http.Request) (interface{}, error)
 }
 
 func decodeDeleteCourse(_ context.Context, r *http.Request) (interface{}, error) {
+
+	if err := authorization(r.Header.Get("Authorization")); err != nil {
+		return nil, response.Forbidden(err.Error())
+	}
 
 	path := mux.Vars(r)
 	req := course.DeleteReq{
@@ -123,4 +147,11 @@ func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 	resp := err.(response.Response)
 	w.WriteHeader(resp.StatusCode())
 	_ = json.NewEncoder(w).Encode(resp)
+}
+
+func authorization(token string) error {
+	if token != os.Getenv("TOKEN") {
+		return errors.New("invalid token")
+	}
+	return nil
 }
