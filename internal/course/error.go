@@ -5,9 +5,9 @@ import (
 	"fmt"
 )
 
-var ErrNameRequiered = errors.New("name is requiered")
-var ErrStartDateRequiered = errors.New("star date is requiered")
-var ErrEndDateRequiered = errors.New("end date is requiered")
+var ErrNameRequired = errors.New("name is required")
+var ErrStartDateRequired = errors.New("star date is required")
+var ErrEndDateRequired = errors.New("end date is required")
 var ErrInvalidStartDate = errors.New("invalid start date")
 var ErrInvalidEndDate = errors.New("invalid end date")
 var ErrEndLesserStart = errors.New("end date mustn't be lesser than start date")
@@ -17,5 +17,5 @@ type ErrNotFound struct {
 }
 
 func (e ErrNotFound) Error() string {
-	return fmt.Sprintf("user '%s' doesn't exist", e.courseID)
+	return fmt.Sprintf("course '%s' doesn't exists", e.courseID)
 }

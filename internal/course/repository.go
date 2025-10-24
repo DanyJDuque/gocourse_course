@@ -121,7 +121,7 @@ func (repo *repo) Count(ctx context.Context, filters Filters) (int, error) {
 	tx := repo.db.WithContext(ctx).Model(domain.Course{})
 	tx = applyFilters(tx, filters)
 	if err := tx.Count(&count).Error; err != nil {
-		return 0, nil
+		return 0, err
 	}
 	return int(count), nil
 }

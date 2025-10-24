@@ -67,15 +67,15 @@ func makeCreateEndpoint(s Service) Controller {
 		req := request.(CreateReq)
 
 		if req.Name == "" {
-			return nil, response.BadRequest(ErrNameRequiered.Error())
+			return nil, response.BadRequest(ErrNameRequired.Error())
 		}
 
 		if req.StartDate == "" {
-			return nil, response.BadRequest(ErrStartDateRequiered.Error())
+			return nil, response.BadRequest(ErrStartDateRequired.Error())
 
 		}
 		if req.EndDate == "" {
-			return nil, response.BadRequest(ErrEndDateRequiered.Error())
+			return nil, response.BadRequest(ErrEndDateRequired.Error())
 		}
 
 		course, err := s.Create(ctx, req.Name, req.StartDate, req.EndDate)
@@ -140,15 +140,15 @@ func makeUpdateEndpoint(s Service) Controller {
 		req := request.(UpdateReq)
 
 		if req.Name != nil && *req.Name == "" {
-			return nil, response.BadRequest(ErrNameRequiered.Error())
+			return nil, response.BadRequest(ErrNameRequired.Error())
 		}
 
 		if req.StartDate != nil && *req.StartDate == "" {
-			return nil, response.BadRequest(ErrStartDateRequiered.Error())
+			return nil, response.BadRequest(ErrStartDateRequired.Error())
 		}
 
 		if req.EndDate != nil && *req.EndDate == "" {
-			return nil, response.BadRequest(ErrEndDateRequiered.Error())
+			return nil, response.BadRequest(ErrEndDateRequired.Error())
 		}
 
 		if err := s.Update(ctx, req.ID, req.Name, req.StartDate, req.EndDate); err != nil {
